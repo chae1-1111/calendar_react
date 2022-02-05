@@ -2,13 +2,24 @@
     header {
         width: 100%;
         background-color: red;
-        padding: 10px 0px;
-
-        p {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1vh;
+        box-sizing: border-box;
+        div {
             color: white;
-            margin: 0;
-            font-size: 30px;
             font-weight: 600;
+            p {
+                margin: 0;
+            }
+            .year {
+                font-size: 1.1em;
+            }
+            .month {
+                font-size: 2em;
+            }
         }
     }
     .content {
@@ -37,6 +48,7 @@
             list-style-type: none;
             flex-wrap: wrap;
             .date {
+                font-size: 1.5vh;
                 width: 14.2%;
                 height: 16vh;
                 font-weight: 500;
@@ -46,11 +58,11 @@
                 border: 1px solid #aaa;
                 .today {
                     width: 3vw;
-                    height: 20px;
+                    height: 2vh;
                     display: inline-block;
                     background-color: red;
                     color: white;
-                    border-radius: 10px;
+                    border-radius: 1vh;
                     font-weight: 600;
                     margin-left: -1vw;
                     text-align: center;
