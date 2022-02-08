@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Calendar.scss";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
-import API from "../config/apiSettings.json";
+import axios from "axios";
+import API_KEYS from "../config/apikey.json";
 
 function Calendar() {
     const d = new Date();
@@ -18,8 +19,7 @@ function Calendar() {
     useEffect(() => {
         makeCal(selected);
         getMonthlySchedules();
-        getDailySchedules();
-    }, []);
+    }, [selected.month]);
 
     const makeCal = (data) => {
         const firstDay = new Date(`${data.year}-${data.month}-01`).getDay();
@@ -40,7 +40,6 @@ function Calendar() {
             date: -1,
         };
         setSelected(newMonth);
-        makeCal(newMonth);
     };
 
     const nextMonth = () => {
@@ -50,21 +49,93 @@ function Calendar() {
             date: -1,
         };
         setSelected(newMonth);
-        makeCal(newMonth);
     };
 
     const getMonthlySchedules = async () => {
-        const result = await (
-            await fetch(API.url + "/calendar?year=2022&month=2")
-        ).json();
-        console.log(result);
+        axios({
+            // fetch
+            method: "GET",
+            url: "/calendar",
+            params: {
+                apikey: API_KEYS.calendar,
+                year: selected.year,
+                month: selected.month,
+                userkey: 10,
+            },
+        }).then((res) => {
+            console.log(res.data);
+        });
     };
 
     const getDailySchedules = async () => {
-        const result = await (
-            await fetch(API.url + "/calendar?year=2022&month=2&date=5")
-        ).json();
-        console.log(result);
+        axios({
+            // fetch
+            method: "GET",
+            url: "/calendar",
+            params: {
+                apikey: API_KEYS.calendar,
+                year: selected.year,
+                month: selected.month,
+                date: selected.date,
+                userkey: 10,
+            },
+        }).then((res) => {
+            console.log(res.data);
+        });
+    };
+
+    const addSchedule = async () => {
+        axios({
+            // fetch
+            method: "POST", // REST api(get, post, put, delete) vs Graph QL
+            url: "/calendar",
+            data: {
+                apikey: API_KEYS.calendar,
+                StartDateTime: "2022-02-10T21:00", // YYYY-MM-DDThh:mm
+                EndDateTime: "2022-02-10T23:00",
+                UserKey: 10,
+                Title: "스터디 하는날~~",
+                Memo: "메모메모",
+                AllDay: false,
+            },
+        }).then((res) => {
+            console.log(res.data);
+        });
+    };
+
+    const editSchedule = async () => {
+        axios({
+            // fetch
+            method: "PUT",
+            url: "/calendar",
+            data: {
+                apikey: API_KEYS.calendar,
+                id: "62026febb7f1163179d98c4c",
+                UserKey: 10,
+                StartDateTime: "2022-02-10T21:30", // YYYY-MM-DDThh:mm
+                EndDateTime: "2022-02-10T23:30",
+                Title: "스터디 하는날~~",
+                Memo: "메모하기 시룸",
+                AllDay: false,
+            },
+        }).then((res) => {
+            console.log(res.data);
+        });
+    };
+
+    const removeSchedule = async () => {
+        axios({
+            // fetch
+            method: "DELETE",
+            url: "/calendar",
+            data: {
+                apikey: API_KEYS.calendar,
+                id: "62026febb7f1163179d98c4c",
+                UserKey: 10,
+            },
+        }).then((res) => {
+            console.log(res.data);
+        });
     };
 
     return (
