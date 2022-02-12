@@ -4,12 +4,15 @@ import Login from "./components/Login"; // 로그인 -> 세션
 import React, { useState } from "react";
 
 function App() {
-    const [user, setUser] = useState({ UserKey: null, name: null });
+    const [user, setUser] = useState({
+        UserKey: window.sessionStorage.getItem("UserKey"),
+        name: window.sessionStorage.getItem("name"),
+    });
 
     return (
         <div className="App">
             {user.UserKey ? (
-                <Calendar user={user} />
+                <Calendar user={user} setUser={setUser} />
             ) : (
                 <Login setUser={setUser} />
             )}

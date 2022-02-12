@@ -70,4 +70,31 @@
             }
         }
     }
+
+    .addSchedule {
+        display: flex;
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        left: 0;
+        top: 0;
+        z-index: 100;
+        background-color: rgba(50, 50, 50, 0.7);
+        align-items: center;
+        justify-content: center;
+
+        .addScheduleForm {
+            position: relative; //기준!
+            width: 40vw;
+            height: 80vh;
+            background-color: white;
+            border-radius: 30px;
+
+            .btn-close {
+                position: absolute;
+                right: 1vw;
+                top: 1vw;
+            }
+        }
+    }
 }

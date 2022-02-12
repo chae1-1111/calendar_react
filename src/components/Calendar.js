@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, version } from "react";
 import "../styles/Calendar.scss";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
+import { IoLogOutOutline, IoAddCircleOutline, IoClose } from "react-icons/io5";
 import axios from "axios";
 import API_KEYS from "../config/apikey.json";
 
-function Calendar() {
+function Calendar(props) {
     const d = new Date();
 
     const arDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -15,11 +16,57 @@ function Calendar() {
         month: d.getMonth() + 1,
         date: d.getDate(),
     });
+    const [viewAdd, setViewAdd] = useState(false);
 
     useEffect(() => {
         makeCal(selected);
         getMonthlySchedules();
     }, [selected.month]);
+
+    useEffect(() => {
+        setSelect();
+    }, []);
+
+    const setSelect = () => {
+        const year = document.getElementById("year");
+        const month = document.getElementById("month");
+        const date = document.getElementById("date");
+
+        for (let i = 0; i < 10; i++) {
+            year.innerHTML +=
+                "<option value='" +
+                (i + d.getFullYear()) +
+                "'>" +
+                (i + d.getFullYear()) +
+                "</option>";
+        }
+
+        for (let i = d.getMonth() + 1; i <= 12; i++) {
+            month.innerHTML += "<option value='" + i + "'>" + i + "</option>";
+        }
+
+        for (let i = d.getDate(); i <= arLastDate[d.getMonth()]; i++) {
+            date.innerHTML += "<option value='" + i + "'>" + i + "</option>";
+        }
+    };
+
+    const setSelectMonth = () => {
+        let month = document.getElementById("month").value;
+        const date = document.getElementById("date");
+
+        for (let i = 1; i <= arLastDate[month - 1]; i++) {
+            date.innerHTML += "<option value='" + i + "'>" + i + "</option>";
+        }
+    };
+
+    const setSelectDate = () => {
+        let month = document.getElementById("month").value;
+        const date = document.getElementById("date");
+
+        for (let i = 1; i <= arLastDate[month - 1]; i++) {
+            date.innerHTML += "<option value='" + i + "'>" + i + "</option>";
+        }
+    };
 
     const makeCal = (data) => {
         const firstDay = new Date(`${data.year}-${data.month}-01`).getDay();
@@ -60,7 +107,7 @@ function Calendar() {
                 apikey: API_KEYS.calendar,
                 year: selected.year,
                 month: selected.month,
-                userkey: 10,
+                userkey: props.user.UserKey,
             },
         }).then((res) => {
             console.log(res.data);
@@ -77,7 +124,7 @@ function Calendar() {
                 year: selected.year,
                 month: selected.month,
                 date: selected.date,
-                userkey: 10,
+                userkey: props.user.UserKey,
             },
         }).then((res) => {
             console.log(res.data);
@@ -138,6 +185,15 @@ function Calendar() {
         });
     };
 
+    const logout = () => {
+        props.setUser({
+            UserKey: null,
+            name: null,
+        });
+        window.sessionStorage.removeItem("UserKey");
+        window.sessionStorage.removeItem("name");
+    };
+
     return (
         <div className="Calendar">
             <header>
@@ -146,7 +202,19 @@ function Calendar() {
                     <p className="year">{selected.year}</p>
                     <p className="month">{selected.month}</p>
                 </div>
-                <BiChevronRight size={60} color="white" onClick={nextMonth} />
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <IoAddCircleOutline
+                        size={40}
+                        color="white"
+                        onClick={() => setViewAdd(true)}
+                    />
+                    <IoLogOutOutline size={40} color="white" onClick={logout} />
+                    <BiChevronRight
+                        size={60}
+                        color="white"
+                        onClick={nextMonth}
+                    />
+                </div>
             </header>
             <div className="content">
                 <ul className="arDay">
@@ -169,6 +237,34 @@ function Calendar() {
                         </li>
                     ))}
                 </ul>
+            </div>
+            <div
+                className="addSchedule"
+                style={viewAdd ? {} : { display: "none" }}
+            >
+                <div className="addScheduleForm">
+                    <IoClose
+                        className="btn-close"
+                        size={40}
+                        onClick={() => setViewAdd(false)}
+                    />
+                    <h2>일정 추가</h2>
+                    <select id="year" className="select"></select>
+                    <select id="month" className="select"></select>
+                    <select id="date" className="select"></select>
+                    <div>
+                        <input id="startH" />:<input id="startM" />
+                    </div>
+                    <div>
+                        <input id="endH" />:<input id="endM" />
+                    </div>
+                    <label>
+                        <input type="checkbox" />
+                        하루 종일
+                    </label>
+                    <input id="title" type="text" placeholder="일정 제목" />
+                    <input id="memo" type="text" placeholder="일정 내용" />
+                </div>
             </div>
         </div>
     );
