@@ -18,6 +18,7 @@ function Calendar(props) {
     });
     const [viewAdd, setViewAdd] = useState(null);
     const [arSchedule, setArSchedule] = useState([]);
+    const [scheduleIndex, setScheduleIndex] = useState(null);
 
     useEffect(() => {
         makeCal(selected);
@@ -148,38 +149,56 @@ function Calendar(props) {
     };
 
     const editSchedule = async () => {
+        let date =
+            selected.year +
+            "-" +
+            String(selected.month).padStart(2, "0") +
+            "-" +
+            String(selected.date).padStart(2, "0");
+        let schedule = arSchedule[scheduleIndex];
         axios({
             // fetch
             method: "PUT",
             url: "/calendar",
             data: {
                 apikey: API_KEYS.calendar,
-                id: "62026febb7f1163179d98c4c",
-                UserKey: 10,
-                StartDateTime: "2022-02-10T21:30", // YYYY-MM-DDThh:mm
-                EndDateTime: "2022-02-10T23:30",
-                Title: "스터디 하는날~~",
-                Memo: "메모하기 시룸",
-                AllDay: false,
+                id: schedule._id,
+                UserKey: props.user.UserKey,
+                StartDateTime:
+                    date + "T" + document.getElementById("startTime").value,
+                EndDateTime:
+                    date + "T" + document.getElementById("endTime").value,
+                Title: document.getElementById("title").value,
+                Memo: document.getElementById("memo").value,
+                AllDay: document.getElementById("allday").checked,
             },
         }).then((res) => {
             console.log(res.data);
+            setViewAdd(null);
+            setScheduleIndex(null);
+            getMonthlySchedules();
         });
     };
 
     const removeSchedule = async () => {
-        axios({
-            // fetch
-            method: "DELETE",
-            url: "/calendar",
-            data: {
-                apikey: API_KEYS.calendar,
-                id: "62026febb7f1163179d98c4c",
-                UserKey: 10,
-            },
-        }).then((res) => {
-            console.log(res.data);
-        });
+        if (window.confirm("정말로 삭제하시겠습니까?")) {
+            axios({
+                // fetch
+                method: "DELETE",
+                url: "/calendar",
+                data: {
+                    apikey: API_KEYS.calendar,
+                    id: arSchedule[scheduleIndex]._id,
+                    UserKey: props.user.UserKey,
+                },
+            }).then((res) => {
+                console.log(res.data);
+                setViewAdd(null);
+                setScheduleIndex(null);
+                getMonthlySchedules();
+                alert("일정이 삭제되었습니다!");
+            });
+        }
     };
 
     const logout = () => {
@@ -191,10 +210,11 @@ function Calendar(props) {
         window.sessionStorage.removeItem("name");
     };
 
-    const allDay = (e) => {
+    const allDay = () => {
         const startTime = document.getElementById("startTime");
         const endTime = document.getElementById("endTime");
-        if (e.target.checked) {
+        const allday = document.getElementById("allday");
+        if (allday.checked) {
             startTime.value = "00:00";
             endTime.value = "23:59";
             startTime.readOnly = true;
@@ -240,7 +260,7 @@ function Calendar(props) {
                         <li
                             key={index}
                             className="date"
-                            onClick={() => select(date)}
+                            onClick={date ? () => select(date) : null}
                         >
                             <span
                                 className={date == selected.date ? "today" : ""}
@@ -256,9 +276,10 @@ function Calendar(props) {
                                         ) == date ? (
                                             <li
                                                 key={scheIndex}
-                                                onClick={() =>
-                                                    setViewAdd("Detail")
-                                                }
+                                                onClick={() => {
+                                                    setViewAdd("Detail");
+                                                    setScheduleIndex(scheIndex);
+                                                }}
                                             >
                                                 {schedule.Title}
                                             </li>
@@ -315,6 +336,84 @@ function Calendar(props) {
                                 placeholder="일정 내용"
                             />
                             <button onClick={addSchedule}>일정 추가</button>
+                        </div>
+                    ) : viewAdd === "Detail" ? (
+                        <div>
+                            <p>
+                                {selected.year}년 {selected.month}월{" "}
+                                {selected.date}일
+                            </p>
+                            <p>{arSchedule[scheduleIndex].Title}</p>
+                            <p>{arSchedule[scheduleIndex].Memo}</p>
+                            {arSchedule[scheduleIndex].AllDay ? (
+                                <p>하루종일</p>
+                            ) : (
+                                <p>
+                                    {arSchedule[
+                                        scheduleIndex
+                                    ].StartDateTime.substr(11, 5)}{" "}
+                                    ~{" "}
+                                    {arSchedule[
+                                        scheduleIndex
+                                    ].EndDateTime.substr(11, 5)}
+                                </p>
+                            )}
+                            <div className="btn-wrap">
+                                <button
+                                    onClick={() => {
+                                        setViewAdd("Edit");
+                                        setTimeout(() => allDay(), 100);
+                                    }}
+                                >
+                                    수정
+                                </button>
+                                <button onClick={removeSchedule}>삭제</button>
+                            </div>
+                        </div>
+                    ) : viewAdd === "Edit" ? (
+                        <div>
+                            <p>
+                                {selected.year}년 {selected.month}월{" "}
+                                {selected.date}일
+                            </p>
+                            <input
+                                type="time"
+                                id="startTime"
+                                defaultValue={arSchedule[
+                                    scheduleIndex
+                                ].StartDateTime.substr(11, 5)}
+                            />
+                            <input
+                                type="time"
+                                id="endTime"
+                                defaultValue={arSchedule[
+                                    scheduleIndex
+                                ].EndDateTime.substr(11, 5)}
+                            />
+                            <label>
+                                <input
+                                    id="allday"
+                                    type="checkbox"
+                                    onChange={allDay}
+                                    defaultChecked={
+                                        arSchedule[scheduleIndex].AllDay
+                                    }
+                                />
+                                하루 종일
+                            </label>
+                            <input
+                                id="title"
+                                type="text"
+                                placeholder="일정 제목"
+                                defaultValue={arSchedule[scheduleIndex].Title}
+                            />
+                            <input
+                                id="memo"
+                                type="text"
+                                placeholder="일정 내용"
+                                defaultValue={arSchedule[scheduleIndex].Memo}
+                            />
+                            <button onClick={editSchedule}>수정</button>
                         </div>
                     ) : null}
                 </div>
